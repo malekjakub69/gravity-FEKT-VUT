@@ -1,0 +1,305 @@
+@import "tailwindcss";
+
+:root {
+    --bg: #f8fafc; /* slate-50 */
+    --card: #ffffff; /* white */
+    --muted: #64748b; /* slate-500 */
+    --text: #0f172a; /* slate-900 */
+    --ring: #93c5fd; /* blue-300 */
+    --border: #e2e8f0; /* slate-200 */
+    --shadow: 0 10px 25px -10px rgba(15, 23, 42, 0.15);
+}
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+html {
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+        "Segoe UI Emoji";
+}
+
+/* Base elements */
+button {
+    transition: all 150ms ease;
+}
+
+input,
+select,
+textarea {
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+    box-shadow: 0 0 0 3px var(--ring);
+}
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow);
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 11pt;
+        line-height: 1.3;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .print\\:hidden {
+        display: none !important;
+    }
+    
+    .print\\:block {
+        display: block !important;
+    }
+    
+    /* Container adjustments for print */
+    .container {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0.5in !important;
+    }
+    
+    /* Header adjustments */
+    .print\\:mb-8 {
+        margin-bottom: 0.5in !important;
+    }
+    
+    /* Grid layout for print - stacked vertically */
+    .grid {
+        display: block !important;
+        gap: 0.5in !important;
+    }
+    
+    .grid > div {
+        width: 100% !important;
+        margin-bottom: 0.5in !important;
+        break-inside: avoid;
+    }
+    
+    /* Special layout for print-layout class - force vertical stacking */
+    .print-layout {
+        display: block !important;
+    }
+    
+    .print-layout > div {
+        width: 100% !important;
+        margin-bottom: 0.5in !important;
+        break-inside: avoid;
+    }
+    
+    /* Table optimizations */
+    table {
+        page-break-inside: avoid;
+        font-size: 9pt;
+        line-height: 1.2;
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    th, td {
+        padding: 2pt 4pt !important;
+        border: 1px solid #000 !important;
+    }
+    
+    th {
+        background-color: #f5f5f5 !important;
+        font-weight: bold;
+    }
+    
+    /* Reduce spacing in cards */
+    .bg-white {
+        padding: 0.25in !important;
+        margin-bottom: 0.25in !important;
+    }
+    
+    /* Headers in cards */
+    h2 {
+        font-size: 14pt !important;
+        margin-bottom: 0.15in !important;
+        margin-top: 0 !important;
+    }
+    
+    h3 {
+        font-size: 12pt !important;
+        margin-bottom: 0.1in !important;
+        margin-top: 0 !important;
+    }
+    
+    /* Statistics boxes */
+    .grid.grid-cols-2 {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.05in !important;
+        margin-bottom: 0.05in !important;
+    }
+    
+    .bg-slate-50 {
+        padding: 0.05in !important;
+        margin-bottom: 0.02in !important;
+    }
+    
+    /* Remove shadows and borders for cleaner print */
+    .shadow-sm,
+    .shadow {
+        box-shadow: none !important;
+    }
+    
+    .rounded-lg {
+        border-radius: 0 !important;
+    }
+    
+    /* QR code sizing for print */
+        canvas {
+            max-width: 2in !important;
+        height: auto !important;
+    }
+    
+    /* Page breaks */
+    .page-break-before {
+        page-break-before: always;
+    }
+    
+    .page-break-after {
+        page-break-after: always;
+    }
+    
+    /* Ensure content fits on page */
+    .print\\:text-3xl {
+        font-size: 18pt !important;
+        margin-bottom: 0.1in !important;
+    }
+    
+    .print\\:text-lg {
+        font-size: 12pt !important;
+        margin-bottom: 0.1in !important;
+    }
+    
+    /* Optimize for single page - force all content to fit on one A4 */
+    .print\\:single-page {
+        height: 11in !important;
+        overflow: hidden !important;
+    }
+    
+    /* Force single page layout for all content */
+    body {
+        height: 11in !important;
+        overflow: hidden !important;
+    }
+    
+    .container {
+        height: 10.5in !important;
+        overflow: hidden !important;
+    }
+    
+    /* Reduce margins for better space utilization */
+    @page {
+        margin: 0.25in;
+        size: A4;
+    }
+    
+    /* Compact spacing for single page */
+    .space-y-8 > * + * {
+        margin-top: 0.1in !important;
+    }
+    
+    .bg-white {
+        padding: 0.08in !important;
+        margin-bottom: 0.08in !important;
+    }
+    
+    /* Smaller fonts for single page */
+    h1 {
+        font-size: 16pt !important;
+        margin-bottom: 0.05in !important;
+    }
+    
+    h2 {
+        font-size: 12pt !important;
+        margin-bottom: 0.04in !important;
+    }
+    
+    h3 {
+        font-size: 10pt !important;
+        margin-bottom: 0.03in !important;
+    }
+    
+    p, div {
+        font-size: 8pt !important;
+        line-height: 1.1 !important;
+        margin-bottom: 0.02in !important;
+    }
+    
+    /* Compact table for single page */
+    table {
+        font-size: 7pt !important;
+        line-height: 1.05 !important;
+        margin-bottom: 0.05in !important;
+        width: 100% !important;
+    }
+    
+    th, td {
+        padding: 1.5pt 3pt !important;
+        text-align: center !important;
+        border: 0.5pt solid #000 !important;
+    }
+    
+    th {
+        font-weight: bold !important;
+        background-color: #f8f9fa !important;
+    }
+    
+    /* Make tables more readable on print */
+    table tr:nth-child(even) {
+        background-color: #f8f9fa !important;
+    }
+    
+    /* Thinner table borders */
+    table {
+        border-collapse: collapse !important;
+    }
+    
+    /* Reduce margins in cards */
+    .mb-6 {
+        margin-bottom: 0.05in !important;
+    }
+    
+    .mb-4 {
+        margin-bottom: 0.03in !important;
+    }
+    
+    .mb-3 {
+        margin-bottom: 0.02in !important;
+    }
+
+}
