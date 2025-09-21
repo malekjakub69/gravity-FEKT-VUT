@@ -157,7 +157,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
           </div>
 
           {/* Statistics */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-2 gap-4">
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-3">
               <div className="text-sm text-slate-600">Kyvadlo 1 - měření</div>
               <div className="text-lg font-semibold text-slate-900">
@@ -170,8 +170,8 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
                 {pendulum2Data.measureA.length}
               </div>
             </div>
-          </div>
-        </div>
+          </div>*/}
+        </div> 
       </ModalContent>
       <ModalActions>
         <button

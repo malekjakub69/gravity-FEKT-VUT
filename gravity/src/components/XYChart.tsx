@@ -48,7 +48,7 @@ export function XYChart({
                             ...(fitA && fitA.length
                                 ? [
                                       {
-                                          label: `Kvadratické proložení A${
+                                          label: `Kvadratické proložení závaží dole${
                                               typeof mseA === "number" ? ` (MSE=${mseA.toFixed(3)})` : ""
                                           }`,
                                           data: fitA,
@@ -63,7 +63,7 @@ export function XYChart({
                             ...(fitB && fitB.length
                                 ? [
                                       {
-                                          label: `Kvadratické proložení B${
+                                          label: `Kvadratické proložení závaží nahoře${
                                               typeof mseB === "number" ? ` (MSE=${mseB.toFixed(3)})` : ""
                                           }`,
                                           data: fitB,
@@ -84,13 +84,13 @@ export function XYChart({
                         scales: {
                             x: {
                                 type: "linear",
-                                title: { display: true, text: "Vzdálenost závaží [mm]", color: "#334155" },
+                                title: { display: true, text: "Vzdálenost závaží od konce [mm]", color: "#334155" },
                                 grid: { color: "#e2e8f0" },
                                 ticks: { color: "#334155" },
                             },
                             y: {
                                 type: "linear",
-                                title: { display: true, text: "Čas [ms]", color: "#334155" },
+                                title: { display: true, text: "Perioda [ms]", color: "#334155" },
                                 grid: { color: "#e2e8f0" },
                                 ticks: { color: "#334155" },
                             },

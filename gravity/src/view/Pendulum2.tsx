@@ -48,15 +48,15 @@ export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data,
             <div className="flex gap-2 mb-4">
                 <button
                     className="px-3 py-2 rounded-md bg-sky-600 hover:bg-sky-500 text-white shadow-sm"
-                    onClick={() => openDialogFor("A")}
+                    onClick={() => openDialogFor("nahoře")}
                 >
-                    Otevřít měření pro A
+                    Otevřít měření pro závaží nahoře
                 </button>
                 <button
                     className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
-                    onClick={() => openDialogFor("B")}
+                    onClick={() => openDialogFor("dole")}
                 >
-                    Otevřít měření pro B
+                    Otevřít měření pro závaží dole
                 </button>
             </div>
 
@@ -73,16 +73,16 @@ export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data,
                     <thead className="bg-slate-50">
                         <tr>
                             <th className="text-left px-3 py-2 font-medium text-slate-700">Popis</th>
-                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty A</th>
-                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty B</th>
+                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty nahoře [ms]</th>
+                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty dole [ms]</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                         {descriptionLabels.map((label, idx) => (
                             <tr key={idx} className="odd:bg-white even:bg-slate-50">
                                 <td className="px-3 py-2">{label}</td>
-                                <td className="px-3 py-2">{pendulum2Data.measureA[idx]?.toFixed(3) ?? "-"}</td>
-                                <td className="px-3 py-2">{pendulum2Data.measureB[idx]?.toFixed(3) ?? "-"}</td>
+                                <td className="px-3 py-2">{pendulum2Data.measureA[idx]?.toFixed(1) ?? "-"}</td>
+                                <td className="px-3 py-2">{pendulum2Data.measureB[idx]?.toFixed(1) ?? "-"}</td>
                             </tr>
                         ))}
                     </tbody>
