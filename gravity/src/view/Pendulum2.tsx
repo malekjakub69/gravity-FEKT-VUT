@@ -2,7 +2,7 @@ import { useState, type Dispatch, type FC, type SetStateAction } from "react";
 import { SerialDialog100 } from "../components/SerialDialog100";
 import type { Pendulum2Data } from "../App";
 
-type Channel = "A" | "B";
+type Channel = "nahoře" | "dole";
 
 type Pendulum2Props = {
     setPendulum2Data: Dispatch<SetStateAction<Pendulum2Data>>;
@@ -12,7 +12,7 @@ type Pendulum2Props = {
 
 export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data, intersection }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [measurementChannel, setMeasurementChannel] = useState<Channel>("A");
+    const [measurementChannel, setMeasurementChannel] = useState<Channel>("nahoře");
 
     function openDialogFor(channel: Channel) {
         setMeasurementChannel(channel);
@@ -20,7 +20,7 @@ export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data,
     }
 
     function handleSave(tenValueSums: number[]) {
-        if (measurementChannel === "A") {
+        if (measurementChannel === "nahoře") {
             setPendulum2Data((prev: Pendulum2Data) => ({ ...prev, measureA: tenValueSums }));
         } else {
             setPendulum2Data((prev: Pendulum2Data) => ({ ...prev, measureB: tenValueSums }));

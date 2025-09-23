@@ -37,8 +37,8 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
   const generateExportUrl = useCallback(() => {
     const dataString = serializeData();
     const base64Data = compressJsonToBase64Url(dataString);
-    const currentOrigin = window.location.origin;
-    return `${currentOrigin}/export?data=${base64Data}`;
+    const currentOrigin = window.location.href;
+    return `${currentOrigin}#export?data=${base64Data}`;
   }, [serializeData]);
 
   // Generate QR code
@@ -151,7 +151,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
             <h3 className="text-lg font-medium text-slate-900">Export URL</h3>
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
               <div className="text-sm text-slate-700 break-all">
-                {generateExportUrl().slice(0, 100)}...
+                {generateExportUrl()}
               </div>
             </div>
           </div>

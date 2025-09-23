@@ -363,7 +363,7 @@ export const Pendulum1: FC<Pendulum1Props> = ({
         </section>
 
         <section className="card p-4">
-          <h3 className="text-slate-900 font-medium mb-3">Parametry matematického kyvadla</h3>
+          <h3 className="text-slate-900 font-medium mb-3">Stanovení polohy závaží</h3>
           {quadraticIntersections.length > 1 && (
             <div className="text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-3">
               ❌ Pozor: Existuje více než jeden průsečík. ❌

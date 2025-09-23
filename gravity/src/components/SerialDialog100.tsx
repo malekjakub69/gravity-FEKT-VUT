@@ -24,7 +24,7 @@ ChartJS.register(
 type Props = {
   isOpen: boolean;
   onClose: () => void;
-  measurementChannel: "A" | "B";
+  measurementChannel: "nahoře" | "dole";
   onSave: (tenValueSums: number[]) => void;
 };
 
@@ -226,12 +226,11 @@ export function SerialDialog100(props: Props) {
           // Plugin pro šedé pozadí pod faded body
           const fadedBgPlugin = {
             id: "fadedBgPlugin",
-            beforeDatasetsDraw: (chart) => {
+            beforeDatasetsDraw: (chart: ChartJS) => {
               const { ctx, chartArea } = chart;
               if (!chartArea) return;
               if (highlightStart > 0) {
                 const xAxis = chart.scales.x;
-                const yAxis = chart.scales.y;
                 const xStart = xAxis.getPixelForValue(1);
                 const xEnd = xAxis.getPixelForValue(highlightStart);
                 ctx.save();
@@ -253,31 +252,41 @@ export function SerialDialog100(props: Props) {
                 <Line
                   data={{
                     datasets: [
-                      fadedPoints.length > 0 && {
-                        data: fadedPoints,
-                        showLine: true,
-                        parsing: false,
-                        pointRadius: 2,
-                        pointBackgroundColor: "rgba(148,163,184,0.3)", // slate-400 faded
-                        pointBorderColor: "rgba(148,163,184,0.3)",
-                        borderColor: "rgba(148,163,184,0.7)", // faded line
-                        backgroundColor: "rgba(148,163,184,0.1)",
-                        spanGaps: true,
-                        order: 1,
-                      },
-                      activePoints.length > 0 && {
-                        data: activePoints,
-                        showLine: true,
-                        parsing: false,
-                        pointRadius: 2,
-                        pointBackgroundColor: "#16a34a", // green-600
-                        pointBorderColor: "#16a34a",
-                        borderColor: "#16a34a", // green line
-                        backgroundColor: "rgba(22,163,74,0.1)",
-                        spanGaps: true,
-                        order: 2,
-                      },
-                    ].filter(Boolean),
+                      ...(
+                        fadedPoints.length > 0
+                          ? [
+                              {
+                                data: fadedPoints,
+                                showLine: true,
+                                pointRadius: 2,
+                                pointBackgroundColor: "rgba(148,163,184,0.3)", // slate-400 faded
+                                pointBorderColor: "rgba(148,163,184,0.3)",
+                                borderColor: "rgba(148,163,184,0.7)", // faded line
+                                backgroundColor: "rgba(148,163,184,0.1)",
+                                spanGaps: true,
+                                order: 1,
+                              },
+                            ]
+                          : []
+                      ),
+                      ...(
+                        activePoints.length > 0
+                          ? [
+                              {
+                                data: activePoints,
+                                showLine: true,
+                                pointRadius: 2,
+                                pointBackgroundColor: "#16a34a", // green-600
+                                pointBorderColor: "#16a34a",
+                                borderColor: "#16a34a", // green line
+                                backgroundColor: "rgba(22,163,74,0.1)",
+                                spanGaps: true,
+                                order: 2,
+                              },
+                            ]
+                          : []
+                      ),
+                    ],
                   }}
                   options={{
                     animation: false,
