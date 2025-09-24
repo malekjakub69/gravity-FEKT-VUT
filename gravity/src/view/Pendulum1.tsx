@@ -96,73 +96,54 @@ const computeQuadraticRegression = (
 };
 
 // Intersection of two quadratics y = a1*x^2 + b1*x + c1 and y = a2*x^2 + b2*x + c2
-// Returns the most plausible intersection based on data domain, or null if none
-const computeQuadraticIntersection = (
+// Returns all plausible intersections based on data domain, or empty array if none
+const computeQuadraticIntersections = (
   qa: { a: number; b: number; c: number } | null,
   qb: { a: number; b: number; c: number } | null,
   domainA: { min: number; max: number } | null,
   domainB: { min: number; max: number } | null
-): { x: number; y: number } | null => {
-  if (!qa || !qb) return null;
+): { x: number; y: number }[] => {
+  if (!qa || !qb) return [];
   const A = qa.a - qb.a;
   const B = qa.b - qb.b;
   const C = qa.c - qb.c;
 
   // Handle near-linear case when quadratic terms cancel out
   if (Math.abs(A) < 1e-12) {
-    if (Math.abs(B) < 1e-12) return null; // parallel or identical
+    if (Math.abs(B) < 1e-12) return []; // parallel or identical
     const x = -C / B;
     const y = qa.a * x * x + qa.b * x + qa.c;
-    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-    return { x, y };
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return [];
+    return [{ x, y }];
   }
 
   const discriminant = B * B - 4 * A * C;
-  if (discriminant < 0) return null;
+  if (discriminant < 0) return [];
   const sqrtD = Math.sqrt(discriminant);
   const x1 = (-B - sqrtD) / (2 * A);
   const x2 = (-B + sqrtD) / (2 * A);
 
   const candidates = [x1, x2].filter((x) => Number.isFinite(x));
-  if (candidates.length === 0) return null;
+  if (candidates.length === 0) return [];
 
-  // Choose candidate within overlapping domain if available, otherwise closest to the union center
-  const pickBest = (xs: number[]): number => {
-    const hasDomains = !!domainA && !!domainB;
-    if (hasDomains) {
-      const overlapMin = Math.max(domainA!.min, domainB!.min);
-      const overlapMax = Math.min(domainA!.max, domainB!.max);
-      const inOverlap = xs.filter((x) => x >= overlapMin && x <= overlapMax);
-      if (inOverlap.length > 0) {
-        // If both inside, pick the one closer to overlap center
-        const center = (overlapMin + overlapMax) / 2;
-        return inOverlap.reduce(
-          (best, x) =>
-            Math.abs(x - center) < Math.abs(best - center) ? x : best,
-          inOverlap[0]
-        );
-      }
-      // fallback to union center
-      const unionMin = Math.min(domainA!.min, domainB!.min);
-      const unionMax = Math.max(domainA!.max, domainB!.max);
-      const center = (unionMin + unionMax) / 2;
-      return xs.reduce(
-        (best, x) =>
-          Math.abs(x - center) < Math.abs(best - center) ? x : best,
-        xs[0]
-      );
-    }
-    // No domain hints; pick the numerically smaller magnitude root
-    return xs.reduce(
-      (best, x) => (Math.abs(x) < Math.abs(best) ? x : best),
-      xs[0]
+  // Filter candidates within overlapping domain if available
+  const hasDomains = !!domainA && !!domainB;
+  let overlapMin = -Infinity,
+    overlapMax = Infinity;
+  if (hasDomains) {
+    overlapMin = Math.max(domainA!.min, domainB!.min);
+    overlapMax = Math.min(domainA!.max, domainB!.max);
+  }
+  const results = candidates
+    .map((x) => {
+      const y = qa.a * x * x + qa.b * x + qa.c;
+      return Number.isFinite(y) ? { x, y } : null;
+    })
+    .filter((pt): pt is { x: number; y: number } => !!pt)
+    .filter((pt) =>
+      hasDomains ? pt.x >= overlapMin && pt.x <= overlapMax : true
     );
-  };
-
-  const x = pickBest(candidates);
-  const y = qa.a * x * x + qa.b * x + qa.c;
-  if (!Number.isFinite(y)) return null;
-  return { x, y };
+  return results;
 };
 
 type Pendulum1Props = {
@@ -314,28 +295,30 @@ export const Pendulum1: FC<Pendulum1Props> = ({
     return { min: Math.min(...xs), max: Math.max(...xs) };
   }, [seriesB]);
 
-  // Quadratic intersection point
-  const quadraticIntersection = useMemo<{
-    distance: number;
-    time: number;
-  } | null>(() => {
-    const intersection = computeQuadraticIntersection(
+  // Quadratic intersection points
+  const quadraticIntersections = useMemo<
+    { distance: number; time: number }[]
+  >(() => {
+    const intersections = computeQuadraticIntersections(
       quadA,
       quadB,
       domainA,
       domainB
     );
-    if (!intersection) return null;
-    return { distance: intersection.x, time: intersection.y };
+    return intersections.map((intersection) => ({
+      distance: intersection.x,
+      time: intersection.y,
+    }));
   }, [quadA, quadB, domainA, domainB]);
 
-  // Side-effect: store regressionA into shared state, guarded to avoid loops
+  // Side-effect: store first regression intersection into shared state, guarded to avoid loops
   useEffect(() => {
-    if (!quadraticIntersection) return;
+    if (!quadraticIntersections || quadraticIntersections.length === 0) return;
+    const first = quadraticIntersections[0];
     setMeasurements((prev: Pendulum1Data) => {
       const next = {
-        distance: quadraticIntersection.distance,
-        time: quadraticIntersection.time,
+        distance: first.distance,
+        time: first.time,
       };
       const prevVal = prev.intersection;
       const same =
@@ -344,7 +327,7 @@ export const Pendulum1: FC<Pendulum1Props> = ({
         prevVal.time === next.time;
       return same ? prev : { ...prev, intersection: next };
     });
-  }, [quadraticIntersection, setMeasurements]);
+  }, [quadraticIntersections, setMeasurements]);
 
   return (
     <>
@@ -380,19 +363,24 @@ export const Pendulum1: FC<Pendulum1Props> = ({
         </section>
 
         <section className="card p-4">
-          <h3 className="text-slate-900 font-medium mb-3">Průsečík přímek</h3>
+          <h3 className="text-slate-900 font-medium mb-3">Stanovení polohy závaží</h3>
+          {quadraticIntersections.length > 1 && (
+            <div className="text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-3">
+              ❌ Pozor: Existuje více než jeden průsečík. ❌
+            </div>
+          )}
           {measurements.intersection ? (
             <div className="flex flex-wrap gap-6 text-slate-900">
               <div>
-                <div className="text-xs text-slate-600">Vzdálenost</div>
+                <div className="text-xs text-slate-600">Vzdálenost závaří od konce</div>
                 <div className="text-xl">
-                  {measurements.intersection.distance.toFixed(3)} mm
+                  {measurements.intersection.distance.toFixed(1)} mm
                 </div>
               </div>
               <div>
-                <div className="text-xs text-slate-600">Čas</div>
+                <div className="text-xs text-slate-600">Perioda</div>
                 <div className="text-xl">
-                  {measurements.intersection.time.toFixed(3)} ms
+                  {measurements.intersection.time.toFixed(1)} ms
                 </div>
               </div>
             </div>
@@ -413,10 +401,10 @@ export const Pendulum1: FC<Pendulum1Props> = ({
                     Vzdálenost [mm]
                   </th>
                   <th className="text-left px-3 py-2 font-medium text-slate-700">
-                    Závaží dole [ms]
+                    Závaží nahoře [ms]
                   </th>
                   <th className="text-left px-3 py-2 font-medium text-slate-700">
-                    Závaží nahoře [ms]
+                    Závaží dole [ms]
                   </th>
                 </tr>
               </thead>

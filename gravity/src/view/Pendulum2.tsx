@@ -2,7 +2,7 @@ import { useState, type Dispatch, type FC, type SetStateAction } from "react";
 import { SerialDialog100 } from "../components/SerialDialog100";
 import type { Pendulum2Data } from "../App";
 
-type Channel = "A" | "B";
+type Channel = "nahoře" | "dole";
 
 type Pendulum2Props = {
     setPendulum2Data: Dispatch<SetStateAction<Pendulum2Data>>;
@@ -12,7 +12,7 @@ type Pendulum2Props = {
 
 export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data, intersection }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [measurementChannel, setMeasurementChannel] = useState<Channel>("A");
+    const [measurementChannel, setMeasurementChannel] = useState<Channel>("nahoře");
 
     function openDialogFor(channel: Channel) {
         setMeasurementChannel(channel);
@@ -20,7 +20,7 @@ export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data,
     }
 
     function handleSave(tenValueSums: number[]) {
-        if (measurementChannel === "A") {
+        if (measurementChannel === "nahoře") {
             setPendulum2Data((prev: Pendulum2Data) => ({ ...prev, measureA: tenValueSums }));
         } else {
             setPendulum2Data((prev: Pendulum2Data) => ({ ...prev, measureB: tenValueSums }));
@@ -48,15 +48,15 @@ export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data,
             <div className="flex gap-2 mb-4">
                 <button
                     className="px-3 py-2 rounded-md bg-sky-600 hover:bg-sky-500 text-white shadow-sm"
-                    onClick={() => openDialogFor("A")}
+                    onClick={() => openDialogFor("nahoře")}
                 >
-                    Otevřít měření pro A
+                    Otevřít měření pro závaží nahoře
                 </button>
                 <button
                     className="px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
-                    onClick={() => openDialogFor("B")}
+                    onClick={() => openDialogFor("dole")}
                 >
-                    Otevřít měření pro B
+                    Otevřít měření pro závaží dole
                 </button>
             </div>
 
@@ -73,16 +73,16 @@ export const Pendulum2: FC<Pendulum2Props> = ({ setPendulum2Data, pendulum2Data,
                     <thead className="bg-slate-50">
                         <tr>
                             <th className="text-left px-3 py-2 font-medium text-slate-700">Popis</th>
-                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty A</th>
-                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty B</th>
+                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty nahoře [ms]</th>
+                            <th className="text-left px-3 py-2 font-medium text-slate-700">Hodnoty dole [ms]</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                         {descriptionLabels.map((label, idx) => (
                             <tr key={idx} className="odd:bg-white even:bg-slate-50">
                                 <td className="px-3 py-2">{label}</td>
-                                <td className="px-3 py-2">{pendulum2Data.measureA[idx]?.toFixed(3) ?? "-"}</td>
-                                <td className="px-3 py-2">{pendulum2Data.measureB[idx]?.toFixed(3) ?? "-"}</td>
+                                <td className="px-3 py-2">{pendulum2Data.measureA[idx]?.toFixed(1) ?? "-"}</td>
+                                <td className="px-3 py-2">{pendulum2Data.measureB[idx]?.toFixed(1) ?? "-"}</td>
                             </tr>
                         ))}
                     </tbody>

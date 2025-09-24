@@ -82,11 +82,11 @@ export function SerialDialog(props: Props) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} modal size="md">
-      <ModalHeader title="Měření" onClose={onClose} />
+      <ModalHeader title="Měření periody" onClose={onClose} />
       <ModalContent className="bg-white p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <label className="flex flex-col gap-1">
-            <span className="text-sm text-slate-600">valueA</span>
+            <span className="text-sm text-slate-600">Vzdálenost závaží od konce [mm]</span>
             <input
               type="number"
               value={inputValueA}
@@ -129,19 +129,20 @@ export function SerialDialog(props: Props) {
             disabled={measurementSamples.length < 5 || !inputValueA}
             className="ml-auto px-3 py-2 rounded-md bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-sm"
           >
-            Save (průměr {measurementSamples.length})
+            Pokračovat {/* (průměr {measurementSamples.length}) */}
           </button>
         </div>
         <div className="text-sm text-slate-700 mb-2 flex items-center gap-2">
           <span>Naposledy načtené hodnoty (max 20):</span>
           <span className="ml-auto text-slate-600">
-            Průměr:{" "}
+            Průměrná perioda: <b>{" "}
             {measurementSamples.length > 0
               ? (
                   measurementSamples.reduce((s, v) => s + v, 0) /
                   measurementSamples.length
-                ).toFixed(3)
-              : "-"}
+                ).toFixed(0)
+              : "-"} ms
+              </b>
           </span>
         </div>
         <div className="overflow-auto rounded-md border border-slate-200 shadow-sm max-h-72">
@@ -183,12 +184,12 @@ export function SerialDialog(props: Props) {
         </div>
       </ModalContent>
       <ModalActions>
-        <button
+        {/* <button
           onClick={onClose}
           className="ml-auto px-3 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 shadow-sm"
         >
           Zavřít
-        </button>
+        </button> */}
       </ModalActions>
     </Modal>
   );

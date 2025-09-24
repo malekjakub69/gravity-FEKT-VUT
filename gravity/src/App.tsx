@@ -96,7 +96,7 @@ function App() {
       <header className="border-b border-slate-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="container flex items-center justify-between py-4">
           <h1 className="text-xl font-semibold text-slate-900">
-            Serial Reader
+            Úloha 10: Matematické kyvadlo
           </h1>
           <div className="flex gap-2">
             <button
@@ -151,7 +151,7 @@ function App() {
                 : "bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
-            Kyvadlo 1
+            Pozice matematického kyvadla
           </button>
           <button
             role="tab"
@@ -164,7 +164,7 @@ function App() {
                 : "bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
-            Kyvadlo 2
+            Postupná metoda měření
           </button>
         </div>
       </div>
@@ -198,6 +198,8 @@ function App() {
         pendulum1Data={pendulum1Data}
         pendulum2Data={pendulum2Data}
       />
+
+      
     </>
   );
 }

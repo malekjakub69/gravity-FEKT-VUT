@@ -127,7 +127,7 @@ export const ExportPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-slate-900">
-                Export dat - Kyvadla
+                Export dat - Úloha 10: Matematické kyvadlo
               </h1>
               <p className="text-slate-600 mt-1">
                 Data z {formatTimestamp(exportData.timestamp)} (verze{" "}
@@ -171,7 +171,7 @@ export const ExportPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                Export dat - Kyvadla
+                Export dat - Úloha 10: Matematické kyvadlo
               </h1>
               <p className="text-slate-600 text-lg">
                 Data z {formatTimestamp(exportData.timestamp)} (verze{" "}
@@ -198,7 +198,7 @@ export const ExportPage: React.FC = () => {
           {/* Kyvadlo 1 */}
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
             <h2 className="text-xl font-semibold text-slate-900 mb-4">
-              Kyvadlo 1
+              Stanovení pozice závaží matematického kyvadla
             </h2>
 
             {/* Měření */}
@@ -209,13 +209,13 @@ export const ExportPage: React.FC = () => {
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-2 px-3 text-slate-600">
-                          Value A
+                          Vzdálenost závaží od konce [mm]
                         </th>
                         <th className="text-left py-2 px-3 text-slate-600">
-                          Measure A
+                          Perioda závaží nahoře [ms]
                         </th>
                         <th className="text-left py-2 px-3 text-slate-600">
-                          Measure B
+                          Perioda závaží dole [ms]
                         </th>
                       </tr>
                     </thead>
@@ -242,19 +242,19 @@ export const ExportPage: React.FC = () => {
             </div>
 
             {/* Průsečík */}
-            <div>
+            <div className="mt-6">
               <h3 className="text-lg font-medium text-slate-700 mb-3">
-                Průsečík
+                Parametry matematického kyvadla
               </h3>
               <div className="bg-slate-50 rounded-lg p-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600">Vzdálenost: </span>
                   <span className="text-lg font-semibold text-slate-900">
-                    {exportData.pendulum1.intersection.distance}
+                    {exportData.pendulum1.intersection.distance.toFixed(2)} mm
                   </span>
                   <span className="text-sm text-slate-600 ml-4">Čas: </span>
                   <span className="text-lg font-semibold text-slate-900">
-                    {exportData.pendulum1.intersection.time}
+                    {exportData.pendulum1.intersection.time.toFixed(1)} ms
                   </span>
                 </div>
               </div>
@@ -264,7 +264,7 @@ export const ExportPage: React.FC = () => {
           {/* Kyvadlo 2 */}
           <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
             <h2 className="text-xl font-semibold text-slate-900 mb-4">
-              Kyvadlo 2
+              Postupná metoda měření
             </h2>
 
             {/* Měření */}
@@ -276,13 +276,13 @@ export const ExportPage: React.FC = () => {
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-2 px-3 text-slate-600">
-                          kmit [s]
+                          Pořadí kmitu
                         </th>
                         <th className="text-left py-2 px-3 text-slate-600">
-                          T1 [s]
+                          Čas kmitu - závaží nahoře [ms]
                         </th>
                         <th className="text-left py-2 px-3 text-slate-600">
-                          T2 [s]
+                          Čas kmitu - závaží dole [ms]
                         </th>
                       </tr>
                     </thead>
@@ -316,8 +316,8 @@ export const ExportPage: React.FC = () => {
                               className="border-b border-slate-100"
                             >
                               <td className="py-2 px-3">{kmit}</td>
-                              <td className="py-2 px-3">{t1.toFixed(2)}</td>
-                              <td className="py-2 px-3">{t2.toFixed(2)}</td>
+                              <td className="py-2 px-3">{t1.toFixed(0)}</td>
+                              <td className="py-2 px-3">{t2.toFixed(0)}</td>
                             </tr>
                           );
                         }
