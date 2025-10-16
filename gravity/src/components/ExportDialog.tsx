@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Modal, ModalHeader, ModalContent, ModalActions } from "./Modal";
 import type { Pendulum1Data, Pendulum2Data } from "../App";
-import { compressJsonToBase64Url } from "../lib/localStorage";
+import { encodeJsonToBase64Url } from "../lib/localStorage";
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -36,9 +36,9 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
   // Generate export URL with compressed + base64url encoded data
   const generateExportUrl = useCallback(() => {
     const dataString = serializeData();
-    const base64Data = compressJsonToBase64Url(dataString);
+    const base64Data = encodeJsonToBase64Url(dataString);
     const currentOrigin = window.location.href;
-    return `${currentOrigin}#export?data=${base64Data}`;
+    return `${currentOrigin}#/export?data=${base64Data}`;
   }, [serializeData]);
 
   // Generate QR code
@@ -171,7 +171,7 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
               </div>
             </div>
           </div>*/}
-        </div> 
+        </div>
       </ModalContent>
       <ModalActions>
         <button

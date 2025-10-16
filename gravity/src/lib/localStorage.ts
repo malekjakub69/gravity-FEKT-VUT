@@ -1,5 +1,4 @@
 import type { Pendulum1Data, Pendulum2Data } from "../App";
-import * as pako from "pako";
 
 const STORAGE_KEYS = {
   PENDULUM1_DATA: "pendulum1Data",
@@ -100,22 +99,14 @@ function fromBase64Url(base64url: string): Uint8Array {
   return bytes;
 }
 
-// Compress JSON string using DEFLATE and encode as base64url
-export function compressJsonToBase64Url(json: string): string {
+// Encode JSON string to base64url
+export function encodeJsonToBase64Url(json: string): string {
   const inputBytes = new TextEncoder().encode(json);
-  const deflateFn = (
-    pako as unknown as { deflate: (d: Uint8Array, o?: unknown) => Uint8Array }
-  ).deflate;
-  const compressed = deflateFn(inputBytes, { level: 9 });
-  return toBase64Url(compressed);
+  return toBase64Url(inputBytes);
 }
 
-// Decode base64url and decompress back to JSON string
-export function decompressBase64UrlToJson(base64url: string): string {
+// Decode base64url back to JSON string
+export function decodeBase64UrlToJson(base64url: string): string {
   const bytes = fromBase64Url(base64url);
-  const inflateFn = (
-    pako as unknown as { inflate: (d: Uint8Array) => Uint8Array }
-  ).inflate;
-  const decompressed = inflateFn(bytes);
-  return new TextDecoder().decode(decompressed);
+  return new TextDecoder().decode(bytes);
 }

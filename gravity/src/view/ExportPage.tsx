@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import QRCode from "qrcode";
 import type { Pendulum1Data, Pendulum2Data } from "../App";
-import { decompressBase64UrlToJson } from "../lib/localStorage";
+import { decodeBase64UrlToJson } from "../lib/localStorage";
 
 interface ExportData {
   pendulum1: Pendulum1Data;
@@ -17,8 +17,12 @@ export const ExportPage: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
+    // For HashRouter, query params are in the hash, not search
+    const hash = window.location.hash; // e.g., "#/export?data=xyz"
+    const queryString = hash.includes("?") ? hash.split("?")[1] : "";
+    const urlParams = new URLSearchParams(queryString);
     const dataParam = urlParams.get("data");
+    console.log("dataParam", urlParams);
 
     if (!dataParam) {
       setError("Chybí data v URL parametru");
@@ -28,7 +32,7 @@ export const ExportPage: React.FC = () => {
 
     try {
       // Try new format: deflate + base64url
-      const json = decompressBase64UrlToJson(dataParam);
+      const json = decodeBase64UrlToJson(dataParam);
       const parsedData = JSON.parse(json) as ExportData;
       setExportData(parsedData);
     } catch (primaryErr) {
