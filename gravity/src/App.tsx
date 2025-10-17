@@ -199,7 +199,21 @@ function App() {
         pendulum2Data={pendulum2Data}
       />
 
-      
+      <footer className="mt-16 border-t border-slate-200 bg-slate-50">
+        <div className="container py-6">
+          <p className="text-right text-sm text-slate-600">
+            Created by{" "}
+            <a
+              href="https://malek.page"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-blue-600 hover:text-blue-700 underline"
+            >
+              Ing. Jakub Málek
+            </a>
+          </p>
+        </div>
+      </footer>
     </>
   );
 }
