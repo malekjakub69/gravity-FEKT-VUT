@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { PolarArea } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -20,52 +21,61 @@ type PolarChartProps = {
   data: PolarDataPoint[];
 };
 
-const CHART_COLORS = [
-  "#3b82f6", // blue-500
-  "#ef4444", // red-500
-  "#10b981", // emerald-500
-  "#f59e0b", // amber-500
-  "#8b5cf6", // violet-500
-  "#ec4899", // pink-500
-  "#06b6d4", // cyan-500
-  "#f97316", // orange-500
-];
+// Generate color based on amplitude (0-30000)
+// Returns a color from blue (low) to red (high)
+function getColorForAmplitude(amplitude: number): string {
+  const normalized = Math.max(0, Math.min(1, amplitude / 30000));
+
+  // Create gradient from blue (0) to red (1)
+  // Hues: 240 (blue) -> 0 (red) going through green and yellow
+  const hue = 240 * (1 - normalized);
+  const saturation = 70 + normalized * 30; // 70-100%
+  const lightness = 50;
+
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
 
 export function PolarChart({ title, data }: PolarChartProps) {
   // Group by amplitude
-  const amplitudeGroups = new Map<number, PolarDataPoint[]>();
-  data.forEach((point) => {
-    if (!amplitudeGroups.has(point.amplitude)) {
-      amplitudeGroups.set(point.amplitude, []);
-    }
-    amplitudeGroups.get(point.amplitude)!.push(point);
-  });
+  const amplitudeGroups = useMemo(() => {
+    const groups = new Map<number, PolarDataPoint[]>();
+    data.forEach((point) => {
+      if (!groups.has(point.amplitude)) {
+        groups.set(point.amplitude, []);
+      }
+      groups.get(point.amplitude)!.push(point);
+    });
+    return groups;
+  }, [data]);
 
   // Sort angles and create datasets
-  const sortedAmplitudes = Array.from(amplitudeGroups.keys()).sort(
-    (a, b) => a - b
-  );
+  const sortedAmplitudes = useMemo(() => {
+    return Array.from(amplitudeGroups.keys()).sort((a, b) => a - b);
+  }, [amplitudeGroups]);
 
-  const chartData = {
-    labels: Array.from({ length: 360 }, (_, i) => `${i}°`),
-    datasets: sortedAmplitudes.map((amplitude, idx) => {
-      const points = amplitudeGroups.get(amplitude)!;
-      const values = new Array(360).fill(null);
+  const chartData = useMemo(() => {
+    return {
+      labels: [], // Chart.js will automatically create angular axis
+      datasets: sortedAmplitudes.map((amplitude) => {
+        const points = amplitudeGroups.get(amplitude)!;
+        const values = new Array(360).fill(null);
 
-      points.forEach((point) => {
-        const angleIndex = Math.round(point.angle) % 360;
-        values[angleIndex] = point.value;
-      });
+        points.forEach((point) => {
+          const angleIndex = Math.round(point.angle) % 360;
+          values[angleIndex] = point.value;
+        });
 
-      return {
-        label: `${amplitude} uA`,
-        data: values,
-        backgroundColor: CHART_COLORS[idx % CHART_COLORS.length] + "80", // Add transparency
-        borderColor: CHART_COLORS[idx % CHART_COLORS.length],
-        borderWidth: 1,
-      };
-    }),
-  };
+        const color = getColorForAmplitude(amplitude);
+        return {
+          label: `${amplitude} uA`,
+          data: values,
+          backgroundColor: color + "80", // Add transparency
+          borderColor: color,
+          borderWidth: 1,
+        };
+      }),
+    };
+  }, [amplitudeGroups, sortedAmplitudes]);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
@@ -85,7 +95,18 @@ export function PolarChart({ title, data }: PolarChartProps) {
               },
             },
             plugins: {
-              legend: { labels: { color: "#334155" } },
+              legend: {
+                display: true,
+                position: "right",
+                labels: {
+                  color: "#334155",
+                  usePointStyle: true,
+                  padding: 15,
+                  font: {
+                    size: 12,
+                  },
+                },
+              },
               title: { display: false },
             },
           }}
