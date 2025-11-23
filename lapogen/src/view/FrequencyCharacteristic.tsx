@@ -5,6 +5,7 @@ import { MeasurementDialog } from "../components/MeasurementDialog";
 import { useWebSerialContext } from "../context/useWebSerialContext";
 
 export type FrequencyData = {
+  id: string;
   frequency: number;
   voltage: number;
   amplitude: number;
@@ -32,7 +33,8 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
   onDataChange,
   isConnected,
 }) => {
-  const { calibrateZeroAngle, setParameters } = useWebSerialContext();
+  const { calibrateZeroAngle, setParameters, parsedData } =
+    useWebSerialContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [amplitudeInput, setAmplitudeInput] = useState("");
   const [frequencyInput, setFrequencyInput] = useState("");
@@ -57,6 +59,16 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
       return;
     }
 
+    // Check angle before opening dialog - arm must be at 0° with ±5° tolerance
+    if (parsedData.angle === undefined || Math.abs(parsedData.angle) > 5) {
+      alert(
+        `Rameno musí být v nulovém úhlu (±5°). Aktuální úhel: ${
+          parsedData.angle?.toFixed(1) ?? "N/A"
+        }°`
+      );
+      return;
+    }
+
     // For frequency characteristic: freq varies, offset=50% of amplitude
     await setParameters(amplitude, frequency, amplitude / 2);
     // Wait a bit for the device to settle
@@ -68,7 +80,12 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
   const handleSaveMeasurement = (voltage: number) => {
     const amplitude = parseFloat(amplitudeInput);
     const frequency = parseFloat(frequencyInput);
-    const newPoint: FrequencyData = { frequency, voltage, amplitude };
+    // Generate unique ID
+    const id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const newPoint: FrequencyData = { id, frequency, voltage, amplitude };
 
     onDataChange([...data, newPoint].sort((a, b) => a.frequency - b.frequency));
     setFrequencyInput("");

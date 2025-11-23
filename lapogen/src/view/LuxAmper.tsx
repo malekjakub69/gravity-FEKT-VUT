@@ -1,11 +1,11 @@
-import { type FC, useState } from "react";
+import { type FC, useState, useMemo } from "react";
 import { XYChart } from "../components/XYChart";
 import { DataTable, type Column } from "../components/DataTable";
 import { MeasurementDialog } from "../components/MeasurementDialog";
 import { useWebSerialContext } from "../context/useWebSerialContext";
 
 export type LuxAmperData = {
-  current: number;
+  amplitude: number;
   voltage: number;
 };
 
@@ -20,15 +20,33 @@ export const LuxAmper: FC<LuxAmperProps> = ({
   onDataChange,
   isConnected,
 }) => {
-  const { setParameters } = useWebSerialContext();
+  const { setParameters, parsedData, calibrateZeroAngle } =
+    useWebSerialContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [amplitudeInput, setAmplitudeInput] = useState("");
+  const [showCalibration, setShowCalibration] = useState(false);
+
+  // Check URL parameter for calibration button visibility
+  useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    setShowCalibration(params.has("calibration") || true); // Always show for now
+  }, []);
 
   const handleAddPoint = async () => {
     const amplitude = parseFloat(amplitudeInput);
 
     if (isNaN(amplitude) || amplitude < 0 || amplitude > 30000) {
       alert("Zadejte platnou amplitudu v rozsahu 0-30000 uA");
+      return;
+    }
+
+    // Check angle before opening dialog - arm must be at 0° with ±5° tolerance
+    if (parsedData.angle === undefined || Math.abs(parsedData.angle) > 5) {
+      alert(
+        `Rameno musí být v nulovém úhlu (±5°). Aktuální úhel: ${
+          parsedData.angle?.toFixed(1) ?? "N/A"
+        }°`
+      );
       return;
     }
 
@@ -41,10 +59,10 @@ export const LuxAmper: FC<LuxAmperProps> = ({
   };
 
   const handleSaveMeasurement = (voltage: number) => {
-    const current = parseFloat(amplitudeInput);
-    const newPoint: LuxAmperData = { current, voltage };
+    const amplitude = parseFloat(amplitudeInput);
+    const newPoint: LuxAmperData = { amplitude, voltage };
 
-    onDataChange([...data, newPoint].sort((a, b) => a.current - b.current));
+    onDataChange([...data, newPoint].sort((a, b) => a.amplitude - b.amplitude));
     setAmplitudeInput("");
   };
 
@@ -52,11 +70,17 @@ export const LuxAmper: FC<LuxAmperProps> = ({
     onDataChange(data.filter((_, i) => i !== index));
   };
 
+  const handleCalibrate = () => {
+    if (window.confirm("Kalibrovat nulový úhel?")) {
+      calibrateZeroAngle();
+    }
+  };
+
   const columns: Column<LuxAmperData>[] = [
     {
-      key: "current",
-      label: "Proud [uA]",
-      render: (item) => item.current.toFixed(0),
+      key: "amplitude",
+      label: "Amplituda [uA]",
+      render: (item) => item.amplitude.toFixed(0),
     },
     {
       key: "voltage",
@@ -68,7 +92,7 @@ export const LuxAmper: FC<LuxAmperProps> = ({
   const chartSeries = [
     {
       label: "Lux-Amper",
-      data: data.map((d) => ({ x: d.current, y: d.voltage })),
+      data: data.map((d) => ({ x: d.amplitude, y: d.voltage })),
       color: "#10b981",
     },
   ];
@@ -76,9 +100,20 @@ export const LuxAmper: FC<LuxAmperProps> = ({
   return (
     <main className="container py-6 space-y-6">
       <section className="card p-4">
-        <h3 className="text-slate-900 font-medium mb-3">
-          Lux-Amper charakteristika
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-slate-900 font-medium">
+            Lux-Amper charakteristika
+          </h3>
+          {showCalibration && (
+            <button
+              onClick={handleCalibrate}
+              disabled={!isConnected}
+              className="px-3 py-1 text-sm rounded-md bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white"
+            >
+              Kalibrovat nulový úhel
+            </button>
+          )}
+        </div>
         <p className="text-slate-700 text-sm mb-4">
           Měření závislosti luxů na proudu. Frekvence: 500 Hz, offset: 50%
           amplitudy. Rameno musí být v nulovém úhlu (±5°).
@@ -112,7 +147,7 @@ export const LuxAmper: FC<LuxAmperProps> = ({
       <section className="card p-4">
         <XYChart
           title="Lux-Amper charakteristika"
-          xAxisLabel="Proud [uA]"
+          xAxisLabel="Amplituda [uA]"
           yAxisLabel="Napětí [V]"
           series={chartSeries}
         />
