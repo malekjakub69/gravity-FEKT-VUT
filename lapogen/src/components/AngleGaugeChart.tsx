@@ -1,6 +1,6 @@
+import { ArcElement, Chart as ChartJS, Title, Tooltip } from "chart.js";
 import { type FC } from "react";
 import { Doughnut } from "react-chartjs-2";
-import { Chart as ChartJS, ArcElement, Tooltip, Title } from "chart.js";
 
 ChartJS.register(ArcElement, Tooltip, Title);
 
@@ -20,7 +20,7 @@ export const AngleGaugeChart: FC<AngleGaugeChartProps> = ({
   unit = "°",
 }) => {
   // Clamp value to range
-  const clampedValue = Math.max(min, Math.min(max, value));
+  const clampedValue = Math.max(min, Math.min(max, value)) + 0.001;
 
   // Calculate positions on scale (0-100%)
   const totalRange = max - min;
@@ -28,7 +28,7 @@ export const AngleGaugeChart: FC<AngleGaugeChartProps> = ({
   const valuePosition = ((clampedValue - min) / totalRange) * 100; // Where value is
 
   // Determine fill color based on sign
-  const fillColor = "#3b82f6"; // Blue for positive, red for negative
+  const fillColor = "#3b82f6";
 
   // Build data arrays
   const dataArray: number[] = [];
@@ -115,7 +115,7 @@ export const AngleGaugeChart: FC<AngleGaugeChartProps> = ({
         <Doughnut data={chartData} options={chartOptions} />
         <div className="absolute bottom-16 text-center">
           <div className="text-4xl font-bold text-slate-900 mb-1">
-            {clampedValue > 0 ? "+" : ""}
+            {clampedValue >= 0.01 ? "+" : ""}
             {clampedValue.toFixed(1)}
           </div>
           <div className="text-lg text-slate-500 font-medium">{unit}</div>

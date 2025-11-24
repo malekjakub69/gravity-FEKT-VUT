@@ -51,7 +51,7 @@ export function useWebSerial() {
       const textDecoder = new TextDecoderStream();
       keepReadingRef.current = true;
       readableClosedRef.current = (
-        port.readable as ReadableStream<Uint8Array>
+        port.readable as ReadableStream<BufferSource>
       ).pipeTo(textDecoder.writable);
 
       const transformer = new LineBreakTransformer();

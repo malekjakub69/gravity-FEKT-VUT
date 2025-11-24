@@ -1,9 +1,9 @@
-import { type FC, useState, useEffect, useRef } from "react";
-import { PolarChart } from "../components/PolarChart";
-import { DataTable, type Column } from "../components/DataTable";
-import { useWebSerialContext } from "../context/useWebSerialContext";
-import { GaugeChart } from "../components/GaugeChart";
+import { useEffect, useRef, useState, type FC } from "react";
 import { AngleGaugeChart } from "../components/AngleGaugeChart";
+import { DataTable, type Column } from "../components/DataTable";
+import { GaugeChart } from "../components/GaugeChart";
+import { PolarChart } from "../components/PolarChart";
+import { useWebSerialContext } from "../context/useWebSerialContext";
 
 export type AngleData = {
   angle: number;
@@ -16,6 +16,9 @@ type AngleCharacteristicProps = {
   onDataChange: (data: AngleData[]) => void;
   isConnected: boolean;
 };
+
+//TODO: oddělat čáry z výsledného grafu
+//TODO: nicetohave: čáry na grafu po 30 stupňích
 
 export const AngleCharacteristic: FC<AngleCharacteristicProps> = ({
   data,
@@ -57,7 +60,7 @@ export const AngleCharacteristic: FC<AngleCharacteristicProps> = ({
       clearTimeout(debounceRef.current);
     }
 
-    const amplitude = parseFloat(amplitudeInput);
+    const amplitude = parseInt(amplitudeInput);
     if (
       !isNaN(amplitude) &&
       amplitude >= 0 &&
@@ -66,7 +69,6 @@ export const AngleCharacteristic: FC<AngleCharacteristicProps> = ({
     ) {
       debounceRef.current = window.setTimeout(async () => {
         // For angle characteristic: freq=200 Hz, offset=50% of amplitude
-        console.log("setting parameters", amplitude, 200, amplitude / 2);
         await setParameters(amplitude, 200, amplitude / 2);
         lastAmplitudeRef.current = amplitude;
         // Reset last data to wait for new measurements
@@ -159,7 +161,7 @@ export const AngleCharacteristic: FC<AngleCharacteristicProps> = ({
     }
 
     // Use current amplitude from device
-    const amplitude = parsedData.amp;
+    const amplitude = parseInt(amplitudeInput);
 
     const newPoint: AngleData = {
       angle: parsedData.angle,
@@ -237,13 +239,13 @@ export const AngleCharacteristic: FC<AngleCharacteristicProps> = ({
               className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0-30000"
             />
-            {isConnected &&
+            {/* {isConnected &&
               parsedData.amp !== undefined &&
               parsedData.amp > 0 && (
                 <p className="text-xs text-slate-500 mt-1">
                   Amplituda: {parsedData.amp.toFixed(0)} uA
                 </p>
-              )}
+              )} */}
           </div>
           <button
             onClick={handleAddPoint}
@@ -259,10 +261,6 @@ export const AngleCharacteristic: FC<AngleCharacteristicProps> = ({
             Přidat bod
           </button>
         </div>
-      </section>
-
-      <section className="card p-4">
-        <PolarChart title="Úhlová charakteristika" data={polarData} />
       </section>
 
       <section className="card p-4">
@@ -307,6 +305,10 @@ export const AngleCharacteristic: FC<AngleCharacteristicProps> = ({
             unit="V"
           />
         </div>
+      </section>
+
+      <section className="card p-4">
+        <PolarChart title="Úhlová charakteristika" data={polarData} />
       </section>
 
       <section className="card p-4">

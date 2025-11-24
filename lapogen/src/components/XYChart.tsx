@@ -1,15 +1,15 @@
-import { Line } from "react-chartjs-2";
 import {
+  CategoryScale,
   Chart as ChartJS,
-  LineElement,
-  PointElement,
+  Legend,
   LinearScale,
+  LineElement,
   LogarithmicScale,
+  PointElement,
   Title,
   Tooltip,
-  Legend,
-  CategoryScale,
 } from "chart.js";
+import { Line } from "react-chartjs-2";
 
 ChartJS.register(
   LineElement,
@@ -38,6 +38,10 @@ type XYChartProps = {
   logarithmicX?: boolean;
   logarithmicY?: boolean;
   showLine?: boolean;
+  xMin?: number;
+  xMax?: number;
+  yMin?: number;
+  yMax?: number;
 };
 
 const CHART_COLORS = [
@@ -59,6 +63,10 @@ export function XYChart({
   logarithmicX = false,
   logarithmicY = false,
   showLine = true,
+  xMin,
+  xMax,
+  yMin,
+  yMax,
 }: XYChartProps) {
   // Calculate min/max values for axes
   const allXValues = series
@@ -97,8 +105,16 @@ export function XYChart({
     ticks: { color: "#334155" },
   };
 
-  // Set min/max only if we have data
-  if (allXValues.length > 0) {
+  // Use fixed xMin/xMax if provided, otherwise calculate from data
+  if (xMin !== undefined) {
+    xAxisConfig.min = xMin;
+  }
+  if (xMax !== undefined) {
+    xAxisConfig.max = xMax;
+  }
+
+  // Set min/max only if we have data and fixed values are not provided
+  if (allXValues.length > 0 && xMin === undefined && xMax === undefined) {
     const minX = Math.min(...allXValues);
     const maxX = Math.max(...allXValues);
     const xRange = maxX - minX;
@@ -118,7 +134,15 @@ export function XYChart({
     }
   }
 
-  if (allYValues.length > 0) {
+  // Use fixed yMin/yMax if provided, otherwise calculate from data
+  if (yMin !== undefined) {
+    yAxisConfig.min = yMin;
+  }
+  if (yMax !== undefined) {
+    yAxisConfig.max = yMax;
+  }
+
+  if (allYValues.length > 0 && yMin === undefined && yMax === undefined) {
     const minY = Math.min(...allYValues);
     const maxY = Math.max(...allYValues);
     const yRange = maxY - minY;

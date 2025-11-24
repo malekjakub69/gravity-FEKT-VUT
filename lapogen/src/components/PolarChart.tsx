@@ -1,12 +1,12 @@
-import { useMemo } from "react";
-import { PolarArea } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
-  RadialLinearScale,
   ArcElement,
-  Tooltip,
+  Chart as ChartJS,
   Legend,
+  RadialLinearScale,
+  Tooltip,
 } from "chart.js";
+import { useCallback, useMemo } from "react";
+import { PolarArea } from "react-chartjs-2";
 
 ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
 
@@ -21,21 +21,19 @@ type PolarChartProps = {
   data: PolarDataPoint[];
 };
 
-// Generate color based on amplitude (0-30000)
-// Returns a color from blue (low) to red (high)
-function getColorForAmplitude(amplitude: number): string {
-  const normalized = Math.max(0, Math.min(1, amplitude / 30000));
-
-  // Create gradient from blue (0) to red (1)
-  // Hues: 240 (blue) -> 0 (red) going through green and yellow
-  const hue = 240 * (1 - normalized);
-  const saturation = 70 + normalized * 30; // 70-100%
-  const lightness = 50;
-
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-}
-
 export function PolarChart({ title, data }: PolarChartProps) {
+  const getColorForAmplitude = useCallback((amplitude: number) => {
+    // Normalize amplitude to 0-1 range, where 15000 maps to 0 and 30000 maps to 1
+    // This ensures even color distribution in the primary range 15000-30000
+    const normalized = Math.max(0, Math.min(1, (amplitude - 15000) / 15000));
+    // Create gradient from blue (0) to red (1)
+    // Hues: 240 (blue) -> 0 (red) going through green and yellow
+    const hue = 240 * (1 - normalized);
+    const saturation = 70 + normalized * 30; // 70-100%
+    const lightness = 50;
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }, []);
+
   // Group by amplitude
   const amplitudeGroups = useMemo(() => {
     const groups = new Map<number, PolarDataPoint[]>();
@@ -53,16 +51,37 @@ export function PolarChart({ title, data }: PolarChartProps) {
     return Array.from(amplitudeGroups.keys()).sort((a, b) => a - b);
   }, [amplitudeGroups]);
 
+  const polarLabels = useMemo(() => {
+    const formatAngle = (angle: number) => {
+      if (angle === 0) {
+        return "0°";
+      }
+      if (Math.abs(angle) === 180) {
+        return "±180°";
+      }
+      const sign = angle > 0 ? "+" : "-";
+      return `${sign}${Math.abs(angle)}°`;
+    };
+
+    return Array.from({ length: 360 }, (_, angle) => {
+      const signedAngle = angle <= 180 ? angle : angle - 360; // map to [-180, 180]
+      if (Math.abs(signedAngle) % 10 !== 0) {
+        return "";
+      }
+      return formatAngle(signedAngle);
+    });
+  }, []);
+
   const chartData = useMemo(() => {
     return {
-      labels: [], // Chart.js will automatically create angular axis
+      labels: polarLabels, // enforce [-180°, +180°] labels on circumference
       datasets: sortedAmplitudes.map((amplitude) => {
         const points = amplitudeGroups.get(amplitude)!;
         const values = new Array(360).fill(null);
 
         points.forEach((point) => {
-          const angleIndex = Math.round(point.angle) % 360;
-          values[angleIndex] = point.value;
+          const normalizedAngle = ((Math.round(point.angle) % 360) + 360) % 360; // keep index within 0-359
+          values[normalizedAngle] = point.value;
         });
 
         const color = getColorForAmplitude(amplitude);
@@ -75,7 +94,7 @@ export function PolarChart({ title, data }: PolarChartProps) {
         };
       }),
     };
-  }, [amplitudeGroups, sortedAmplitudes]);
+  }, [amplitudeGroups, sortedAmplitudes, polarLabels]);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
@@ -92,22 +111,18 @@ export function PolarChart({ title, data }: PolarChartProps) {
                 beginAtZero: true,
                 ticks: { color: "#334155" },
                 grid: { color: "#e2e8f0" },
+                startAngle: 0, // rotate so that 0° points up
+                pointLabels: {
+                  display: true,
+                  color: "#475569",
+                  font: { size: 10 },
+                },
               },
             },
             plugins: {
               legend: {
-                display: true,
-                position: "right",
-                labels: {
-                  color: "#334155",
-                  usePointStyle: true,
-                  padding: 15,
-                  font: {
-                    size: 12,
-                  },
-                },
+                display: false,
               },
-              title: { display: false },
             },
           }}
         />

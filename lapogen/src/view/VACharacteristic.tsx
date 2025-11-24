@@ -1,8 +1,8 @@
-import { type FC, useState, useEffect, useRef } from "react";
-import { XYChart } from "../components/XYChart";
+import { useEffect, useRef, useState, type FC } from "react";
 import { DataTable, type Column } from "../components/DataTable";
-import { useWebSerialContext } from "../context/useWebSerialContext";
 import { GaugeChart } from "../components/GaugeChart";
+import { XYChart } from "../components/XYChart";
+import { useWebSerialContext } from "../context/useWebSerialContext";
 
 export type VAData = {
   current: number;
@@ -83,7 +83,7 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
     if (isNaN(current) || current <= 0) {
       return;
     }
-    const voltage = parsedData.voltage / 1000; // Convert from mV to V
+    const voltage = parsedData.voltage; // Convert from mV to V
     const newPoint: VAData = { current, voltage };
 
     // Always add new point, even for duplicate current values
@@ -102,7 +102,7 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
     },
     {
       key: "voltage",
-      label: "Napětí [V]",
+      label: "Napětí [mV]",
       render: (item) => item.voltage.toFixed(3),
     },
   ];
@@ -110,7 +110,9 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
   const chartSeries = [
     {
       label: "VA Charakteristika",
-      data: data.map((d) => ({ x: d.current, y: d.voltage })),
+      data: data
+        .map((d) => ({ x: d.current, y: d.voltage }))
+        .sort((a, b) => a.x - b.x),
       color: "#3b82f6",
     },
   ];
@@ -173,7 +175,7 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
                   min={0}
                   max={3300}
                   label="LED Voltage"
-                  unit="V"
+                  unit="mV"
                 />
               </div>
             </div>
@@ -197,10 +199,14 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
         <XYChart
           title=""
           xAxisLabel="Proud [uA]"
-          yAxisLabel="Napětí [V]"
+          yAxisLabel="Napětí [mV]"
           series={chartSeries}
-          showLine={false}
+          showLine={true}
           logarithmicX={logarithmicX}
+          yMin={900}
+          yMax={1500}
+          xMin={0}
+          xMax={30000}
         />
       </section>
 
@@ -208,7 +214,7 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
         <h3 className="text-slate-900 font-medium mb-3">Tabulka měření</h3>
         <DataTable
           columns={columns}
-          data={data}
+          data={data.sort((a, b) => a.current - b.current)}
           onDelete={handleDelete}
           emptyMessage="Žádná měření"
         />
