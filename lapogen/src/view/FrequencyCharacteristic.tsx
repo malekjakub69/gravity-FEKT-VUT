@@ -24,6 +24,7 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
   const { setParameters, parsedData, measureAll } = useWebSerialContext();
   const [amplitudeInput, setAmplitudeInput] = useState("");
   const [frequencyInput, setFrequencyInput] = useState("");
+  const [logarithmicY, setLogarithmicY] = useState(false);
 
   const getColorForAmplitude = useCallback((amplitude: number) => {
     // Normalize amplitude to 0-1 range, where 0 maps to 0 and 30000 maps to 1
@@ -57,6 +58,16 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
     }
     if (isNaN(frequency) || frequency < 1 || frequency > 200000) {
       alert("Zadejte platnou frekvenci v rozsahu 1-200000 Hz");
+      return;
+    }
+
+    // Check angle before opening dialog - arm must be at 0° with ±5° tolerance
+    if (parsedData.angle === undefined || Math.abs(parsedData.angle) > 5) {
+      alert(
+        `Rameno musí být v nulovém úhlu (±5°). Aktuální úhel: ${
+          parsedData.angle?.toFixed(1) ?? "N/A"
+        }°`
+      );
       return;
     }
 
@@ -157,7 +168,13 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
               max="30000"
               step="1"
               value={amplitudeInput}
-              onChange={(e) => setAmplitudeInput(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers and empty string
+                if (value === "" || /^\d+$/.test(value)) {
+                  setAmplitudeInput(value);
+                }
+              }}
               className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0-30000"
             />
@@ -172,7 +189,13 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
               max="200000"
               step="0.1"
               value={frequencyInput}
-              onChange={(e) => setFrequencyInput(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers and empty string
+                if (value === "" || /^\d+$/.test(value)) {
+                  setFrequencyInput(value);
+                }
+              }}
               className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="1-200000"
             />
@@ -188,12 +211,29 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
       </section>
 
       <section className="card p-4">
+        {" "}
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-slate-900 font-medium">
+            Frekvenční charakteristika
+          </h3>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-sm text-slate-700">Logaritmická osa Y</span>
+            <input
+              type="checkbox"
+              checked={logarithmicY}
+              onChange={(e) => setLogarithmicY(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-2 focus:ring-blue-500"
+            />
+          </label>
+        </div>
         <XYChart
-          title="Frekvenční charakteristika"
+          title=""
           xAxisLabel="Frekvence [Hz]"
           yAxisLabel="Napětí [V]"
           series={chartSeries}
           logarithmicX={true}
+          logarithmicY={logarithmicY}
+          showLine={false}
           yMin={0}
           yMax={2000}
           xMin={100}
@@ -203,6 +243,7 @@ export const FrequencyCharacteristic: FC<FrequencyCharacteristicProps> = ({
 
       <section className="card p-4">
         <h3 className="text-slate-900 font-medium mb-3">Tabulka měření</h3>
+
         <DataTable
           columns={columns}
           data={data}

@@ -2,13 +2,13 @@ import {
   useEffect,
   useMemo,
   useState,
-  type FC,
   type Dispatch,
+  type FC,
   type SetStateAction,
 } from "react";
-import { XYChart } from "../components/XYChart";
-import { SerialDialog } from "../components/SerialDialog";
 import type { Pendulum1Data } from "../App";
+import { SerialDialog } from "../components/SerialDialog";
+import { XYChart } from "../components/XYChart";
 
 // Simple linear type for points used in charts and regressions
 type XYPoint = { x: number; y: number };
@@ -339,10 +339,6 @@ export const Pendulum1: FC<Pendulum1Props> = ({
 
       <main className="container py-6 space-y-6">
         <section className="card p-4">
-          <h3 className="text-slate-900 font-medium mb-3">TEXT TBD...</h3>
-        </section>
-
-        <section className="card p-4">
           <XYChart
             seriesA={seriesA}
             seriesB={seriesB}
@@ -363,7 +359,9 @@ export const Pendulum1: FC<Pendulum1Props> = ({
         </section>
 
         <section className="card p-4">
-          <h3 className="text-slate-900 font-medium mb-3">Stanovení polohy závaží</h3>
+          <h3 className="text-slate-900 font-medium mb-3">
+            Stanovení polohy závaží
+          </h3>
           {quadraticIntersections.length > 1 && (
             <div className="text-amber-700 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 mb-3">
               ❌ Pozor: Existuje více než jeden průsečík. ❌
@@ -372,15 +370,17 @@ export const Pendulum1: FC<Pendulum1Props> = ({
           {measurements.intersection ? (
             <div className="flex flex-wrap gap-6 text-slate-900">
               <div>
-                <div className="text-xs text-slate-600">Vzdálenost závaří od konce</div>
+                <div className="text-xs text-slate-600">
+                  Vzdálenost závaří od konce
+                </div>
                 <div className="text-xl">
-                  {measurements.intersection.distance.toFixed(1)} mm
+                  {measurements.intersection.distance.toFixed(2)} mm
                 </div>
               </div>
               <div>
                 <div className="text-xs text-slate-600">Perioda</div>
                 <div className="text-xl">
-                  {measurements.intersection.time.toFixed(1)} ms
+                  {measurements.intersection.time.toFixed(2)} ms
                 </div>
               </div>
             </div>

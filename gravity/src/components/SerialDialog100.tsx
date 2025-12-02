@@ -1,16 +1,16 @@
-import { useEffect, useState, useMemo } from "react";
-import { Modal, ModalContent, ModalActions, ModalHeader } from "./Modal";
-import { useWebSerialContext } from "../context/useWebSerialContext";
-import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
+  Legend,
+  LinearScale,
   LineElement,
   PointElement,
-  LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
+import { useEffect, useMemo, useState } from "react";
+import { Line } from "react-chartjs-2";
+import { useWebSerialContext } from "../context/useWebSerialContext";
+import { Modal, ModalActions, ModalContent, ModalHeader } from "./Modal";
 
 ChartJS.register(
   LineElement,
@@ -35,7 +35,6 @@ export function SerialDialog100(props: Props) {
   const [measurementActive, setMeasurementActive] = useState<boolean>(false);
   const [measurementSamples, setMeasurementSamples] = useState<number[]>([]);
   const [skippedFirstSample, setSkippedFirstSample] = useState<boolean>(false);
-  const [mustRestart, setMustRestart] = useState<boolean>(false);
 
   // Reset local dialog state when opened/closed
   useEffect(() => {
@@ -43,7 +42,6 @@ export function SerialDialog100(props: Props) {
       setMeasurementActive(false);
       setMeasurementSamples([]);
       setSkippedFirstSample(false);
-      setMustRestart(false);
     }
   }, [isOpen]);
 
@@ -73,26 +71,14 @@ export function SerialDialog100(props: Props) {
     setMeasurementSamples([]);
     setMeasurementActive(true);
     setSkippedFirstSample(false);
-    setMustRestart(false);
   }
 
   function stop() {
     setMeasurementActive(false);
   }
 
-  function removeSample(index: number) {
-    setMeasurementSamples((prev) => {
-      const next = prev.filter((_, i) => i !== index);
-      if (next.length < 90) {
-        setMustRestart(true);
-      }
-      return next;
-    });
-  }
-
   function handleSave() {
     if (measurementSamples.length < 90) return;
-    if (mustRestart) return;
     const lastNinety = measurementSamples.slice(-90);
     const sums: number[] = [];
     for (let i = 0; i < 90; i += 10) {
@@ -110,11 +96,12 @@ export function SerialDialog100(props: Props) {
       const avg = lastNinety.reduce((acc, v) => acc + v, 0) / 90;
       const outliers = lastNinety
         .map((v, i) => ({ v, i }))
-        .filter(({ v }) => Math.abs(v - avg) > 0.05 * avg);
+        .filter(({ v }) => Math.abs(v - avg) > 0.1 * avg);
       if (outliers.length > 0) {
         return (
           <div className="mb-4 p-3 rounded-md bg-rose-50 text-rose-800 border border-rose-200">
-            ❌ Pozor některý z kmitů se liší o více než 5% od průměru ({avg.toFixed(2)} ms). ❌
+            ❌ Pozor některý z kmitů se liší o více než 10% od průměru (
+            {avg.toFixed(2)} ms). ❌
             <br />
             {/* Indexy: {outliers.map(({ i }) => i + 1).join(", ")} */}
           </div>
@@ -125,7 +112,7 @@ export function SerialDialog100(props: Props) {
   }, [measurementSamples]);
 
   const count = measurementSamples.length;
-  const canSave = count >= 90 && !mustRestart;
+  const canSave = count >= 90;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} modal size="own">
@@ -134,11 +121,6 @@ export function SerialDialog100(props: Props) {
         onClose={onClose}
       />
       <ModalContent className="bg-white p-6">
-        {mustRestart && (
-          <div className="mb-4 p-3 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-            ❌ Počet hodnot klesl pod 90. Je potřeba spustit měření znovu. ❌
-          </div>
-        )}
         {outlierWarning}
 
         <div className="flex items-center gap-2 mb-4">
@@ -156,8 +138,8 @@ export function SerialDialog100(props: Props) {
           >
             Stop
           </button>
-          <div className="text-slate-700 text-sm ml-auto">
-            <span className="font-medium">Počet vzorků:</span> {count} / 100
+          <div className="text-black text-xl font-bold ml-auto">
+            {count} / 100
           </div>
           <button
             onClick={handleSave}
@@ -178,30 +160,23 @@ export function SerialDialog100(props: Props) {
                 <th className="text-left px-3 py-2 font-medium text-slate-700">
                   Perioda [ms]
                 </th>
-                <th className="text-right px-3 py-2 font-medium text-slate-700">
-                  Akce
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {(() => {
                 const slice = measurementSamples.slice(-100);
-                const baseIndex = Math.max(0, measurementSamples.length - 100);
                 const highlightStart = Math.max(0, slice.length - 90);
-                return slice.map((v, i) => {
+                return slice.reverse().map((v, i) => {
                   const isFaded = i < highlightStart;
                   return (
-                    <tr key={i} className={`odd:bg-white even:bg-slate-50 ${isFaded ? "text-slate-400" : ""}`}>
+                    <tr
+                      key={i}
+                      className={`odd:bg-white even:bg-slate-50 ${
+                        isFaded ? "text-slate-400" : ""
+                      }`}
+                    >
                       <td className="px-3 py-2">{i + 1}</td>
                       <td className="px-3 py-2">{v}</td>
-                      <td className="px-3 py-2 text-right">
-                        <button
-                          onClick={() => removeSample(baseIndex + i)}
-                          className="px-2 py-1 rounded-md text-white bg-rose-600 hover:bg-rose-500 shadow-sm"
-                        >
-                          Smazat
-                        </button>
-                      </td>
                     </tr>
                   );
                 });
@@ -252,40 +227,36 @@ export function SerialDialog100(props: Props) {
                 <Line
                   data={{
                     datasets: [
-                      ...(
-                        fadedPoints.length > 0
-                          ? [
-                              {
-                                data: fadedPoints,
-                                showLine: true,
-                                pointRadius: 2,
-                                pointBackgroundColor: "rgba(148,163,184,0.3)", // slate-400 faded
-                                pointBorderColor: "rgba(148,163,184,0.3)",
-                                borderColor: "rgba(148,163,184,0.7)", // faded line
-                                backgroundColor: "rgba(148,163,184,0.1)",
-                                spanGaps: true,
-                                order: 1,
-                              },
-                            ]
-                          : []
-                      ),
-                      ...(
-                        activePoints.length > 0
-                          ? [
-                              {
-                                data: activePoints,
-                                showLine: true,
-                                pointRadius: 2,
-                                pointBackgroundColor: "#16a34a", // green-600
-                                pointBorderColor: "#16a34a",
-                                borderColor: "#16a34a", // green line
-                                backgroundColor: "rgba(22,163,74,0.1)",
-                                spanGaps: true,
-                                order: 2,
-                              },
-                            ]
-                          : []
-                      ),
+                      ...(fadedPoints.length > 0
+                        ? [
+                            {
+                              data: fadedPoints,
+                              showLine: true,
+                              pointRadius: 2,
+                              pointBackgroundColor: "rgba(148,163,184,0.3)", // slate-400 faded
+                              pointBorderColor: "rgba(148,163,184,0.3)",
+                              borderColor: "rgba(148,163,184,0.7)", // faded line
+                              backgroundColor: "rgba(148,163,184,0.1)",
+                              spanGaps: true,
+                              order: 1,
+                            },
+                          ]
+                        : []),
+                      ...(activePoints.length > 0
+                        ? [
+                            {
+                              data: activePoints,
+                              showLine: true,
+                              pointRadius: 2,
+                              pointBackgroundColor: "#16a34a", // green-600
+                              pointBorderColor: "#16a34a",
+                              borderColor: "#16a34a", // green line
+                              backgroundColor: "rgba(22,163,74,0.1)",
+                              spanGaps: true,
+                              order: 2,
+                            },
+                          ]
+                        : []),
                     ],
                   }}
                   options={{

@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
+import { ExportDialog } from "./components/ExportDialog";
+import { PdfDialog } from "./components/PdfDialog";
 import { useWebSerialContext } from "./context/useWebSerialContext";
-import { VACharacteristic, type VAData } from "./view/VACharacteristic";
+import {
+  clearAppData,
+  isLocalStorageAvailable,
+  loadAppData,
+  saveAppData,
+} from "./lib/localStorage";
 import {
   AngleCharacteristic,
   type AngleData,
@@ -10,13 +17,7 @@ import {
   type FrequencyData,
 } from "./view/FrequencyCharacteristic";
 import { LuxAmper, type LuxAmperData } from "./view/LuxAmper";
-import { ExportDialog } from "./components/ExportDialog";
-import {
-  saveAppData,
-  loadAppData,
-  clearAppData,
-  isLocalStorageAvailable,
-} from "./lib/localStorage";
+import { VACharacteristic, type VAData } from "./view/VACharacteristic";
 
 export type AppData = {
   vaCharacteristic: VAData[];
@@ -45,6 +46,7 @@ function App() {
 
   const [activeTab, setActiveTab] = useState<TabType | undefined>(undefined);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isPdfDialogOpen, setIsPdfDialogOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen && !activeTab) {
@@ -64,6 +66,30 @@ function App() {
       saveAppData(appData);
     }
   }, [appData]);
+
+  // Handle delete URL parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has("delete")) {
+      // Perform reset without confirmation dialog
+      if (isLocalStorageAvailable()) {
+        clearAppData();
+      }
+      setAppData({
+        vaCharacteristic: [],
+        angleCharacteristic: [],
+        frequencyCharacteristic: [],
+        luxAmper: [],
+      });
+      // Remove delete parameter from URL
+      urlParams.delete("delete");
+      const newUrl =
+        urlParams.toString() === ""
+          ? window.location.pathname
+          : `${window.location.pathname}?${urlParams.toString()}`;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, []);
 
   const reset = () => {
     if (
@@ -87,9 +113,7 @@ function App() {
     <>
       <header className="border-b border-slate-200 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60">
         <div className="container flex items-center justify-between py-4">
-          <h1 className="text-xl font-semibold text-slate-900">
-            LED Charakteristiky
-          </h1>
+          <h1 className="text-xl font-semibold text-slate-900">Lapogen </h1>
           <div className="flex gap-2">
             <button
               onClick={reset}
@@ -104,6 +128,26 @@ function App() {
               className="px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white shadow-sm"
             >
               Export
+            </button>
+            <button
+              onClick={() => setIsPdfDialogOpen(true)}
+              className="px-3 py-2 rounded-md bg-yellow-200 hover:bg-yellow-300 disabled:opacity-50 text-black shadow-sm flex items-center justify-center"
+              title="Export"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                />
+              </svg>
             </button>
             <button
               onClick={connect}
@@ -163,7 +207,7 @@ function App() {
                 : "bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
-            Úhel LED
+            Vyzařovací charakteristika
           </button>
           <button
             role="tab"
@@ -254,6 +298,11 @@ function App() {
         isOpen={isExportDialogOpen}
         onClose={() => setIsExportDialogOpen(false)}
         data={appData}
+      />
+
+      <PdfDialog
+        isOpen={isPdfDialogOpen}
+        onClose={() => setIsPdfDialogOpen(false)}
       />
 
       <footer className="mt-16 border-t border-slate-200 bg-slate-50">

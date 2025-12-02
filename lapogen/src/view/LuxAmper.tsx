@@ -230,7 +230,13 @@ export const LuxAmper: FC<LuxAmperProps> = ({
               max="30000"
               step="1"
               value={amplitudeInput}
-              onChange={(e) => setAmplitudeInput(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers and empty string
+                if (value === "" || /^\d+$/.test(value)) {
+                  setAmplitudeInput(value);
+                }
+              }}
               className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="0-30000"
             />

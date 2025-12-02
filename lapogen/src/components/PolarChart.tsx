@@ -6,7 +6,7 @@ import {
   Tooltip,
 } from "chart.js";
 import { useCallback, useMemo } from "react";
-import { PolarArea } from "react-chartjs-2";
+import { Radar } from "react-chartjs-2";
 
 ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
 
@@ -56,15 +56,15 @@ export function PolarChart({ title, data }: PolarChartProps) {
       if (angle === 0) {
         return "0°";
       }
-      if (Math.abs(angle) === 180) {
-        return "±180°";
+      if (Math.abs(angle) === 90) {
+        return "±90°";
       }
       const sign = angle > 0 ? "+" : "-";
       return `${sign}${Math.abs(angle)}°`;
     };
 
-    return Array.from({ length: 360 }, (_, angle) => {
-      const signedAngle = angle <= 180 ? angle : angle - 360; // map to [-180, 180]
+    return Array.from({ length: 180 }, (_, angle) => {
+      const signedAngle = angle <= 90 ? angle : angle - 180; // map to [-90, 90]
       if (Math.abs(signedAngle) % 10 !== 0) {
         return "";
       }
@@ -77,10 +77,10 @@ export function PolarChart({ title, data }: PolarChartProps) {
       labels: polarLabels, // enforce [-180°, +180°] labels on circumference
       datasets: sortedAmplitudes.map((amplitude) => {
         const points = amplitudeGroups.get(amplitude)!;
-        const values = new Array(360).fill(null);
+        const values = new Array(180).fill(null);
 
         points.forEach((point) => {
-          const normalizedAngle = ((Math.round(point.angle) % 360) + 360) % 360; // keep index within 0-359
+          const normalizedAngle = ((Math.round(point.angle) % 180) + 180) % 180; // keep index within 0-179
           values[normalizedAngle] = point.value;
         });
 
@@ -100,7 +100,7 @@ export function PolarChart({ title, data }: PolarChartProps) {
     <div className="bg-white rounded-xl border border-slate-200 p-4">
       <h3 className="text-slate-900 text-center font-medium mb-3">{title}</h3>
       <div className="h-96 flex items-center justify-center">
-        <PolarArea
+        <Radar
           data={chartData}
           options={{
             animation: false,
@@ -109,13 +109,27 @@ export function PolarChart({ title, data }: PolarChartProps) {
             scales: {
               r: {
                 beginAtZero: true,
-                ticks: { color: "#334155" },
+                ticks: {
+                  color: "#334155",
+                  display: false, // 1. SKRYJE ČÍSLA (popis osy od středu)
+                  stepSize: 300,
+                },
                 grid: { color: "#e2e8f0" },
                 startAngle: 0, // rotate so that 0° points up
                 pointLabels: {
                   display: true,
                   color: "#475569",
                   font: { size: 10 },
+                },
+                angleLines: {
+                  display: true,
+                  // Funkce pro barvu: zobrazí čáru jen pro každý 2. bod (sudý index)
+                  color: (context) => {
+                    if (context.index % 4 === 0) {
+                      return "rgba(0, 0, 0, 0.1)"; // Viditelná barva mřížky
+                    }
+                    return "transparent"; // Skrytá čára
+                  },
                 },
               },
             },

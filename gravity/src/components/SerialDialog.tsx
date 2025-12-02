@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useState } from "react";
-import { Modal, ModalHeader, ModalContent, ModalActions } from "./Modal";
 import { useWebSerialContext } from "../context/useWebSerialContext";
+import { Modal, ModalActions, ModalContent, ModalHeader } from "./Modal";
 
 type Props = {
   inputValueA: string;
@@ -69,10 +69,6 @@ export function SerialDialog(props: Props) {
     setMeasurementActive(false);
   }
 
-  function removeSample(index: number) {
-    setMeasurementSamples((prev) => prev.filter((_, i) => i !== index));
-  }
-
   function handleSave() {
     if (measurementSamples.length < 5) return;
     const avg =
@@ -86,11 +82,19 @@ export function SerialDialog(props: Props) {
       <ModalContent className="bg-white p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <label className="flex flex-col gap-1">
-            <span className="text-sm text-slate-600">Vzdálenost závaží od konce [mm]</span>
+            <span className="text-sm text-slate-600">
+              Vzdálenost závaží od konce [mm]
+            </span>
             <input
               type="number"
               value={inputValueA}
-              onChange={(e) => setInputValueA(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers and empty string
+                if (value === "" || /^\d+$/.test(value)) {
+                  setInputValueA(value);
+                }
+              }}
               className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-blue-300"
             />
           </label>
@@ -135,14 +139,17 @@ export function SerialDialog(props: Props) {
         <div className="text-sm text-slate-700 mb-2 flex items-center gap-2">
           <span>Naposledy načtené hodnoty (max 20):</span>
           <span className="ml-auto text-slate-600">
-            Průměrná perioda: <b>{" "}
-            {measurementSamples.length > 0
-              ? (
-                  measurementSamples.reduce((s, v) => s + v, 0) /
-                  measurementSamples.length
-                ).toFixed(0)
-              : "-"} ms
-              </b>
+            Průměrná perioda:{" "}
+            <b>
+              {" "}
+              {measurementSamples.length > 0
+                ? (
+                    measurementSamples.reduce((s, v) => s + v, 0) /
+                    measurementSamples.length
+                  ).toFixed(0)
+                : "-"}{" "}
+              ms
+            </b>
           </span>
         </div>
         <div className="overflow-auto rounded-md border border-slate-200 shadow-sm max-h-72">
@@ -155,27 +162,15 @@ export function SerialDialog(props: Props) {
                 <th className="text-left px-3 py-2 font-medium text-slate-700">
                   Perioda [ms]
                 </th>
-                <th className="text-right px-3 py-2 font-medium text-slate-700">
-                  Akce
-                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {(() => {
                 const slice = measurementSamples.slice(-20);
-                const baseIndex = Math.max(0, measurementSamples.length - 20);
-                return slice.map((v, i) => (
+                return slice.reverse().map((v, i) => (
                   <tr key={i} className="odd:bg-white even:bg-slate-50">
                     <td className="px-3 py-2">{i + 1}</td>
                     <td className="px-3 py-2">{v}</td>
-                    <td className="px-3 py-2 text-right">
-                      <button
-                        onClick={() => removeSample(baseIndex + i)}
-                        className="px-2 py-1 rounded-md text-white bg-rose-600 hover:bg-rose-500 shadow-sm"
-                      >
-                        Smazat
-                      </button>
-                    </td>
                   </tr>
                 ));
               })()}

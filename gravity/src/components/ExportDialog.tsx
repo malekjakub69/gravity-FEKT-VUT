@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
-import { Modal, ModalHeader, ModalContent, ModalActions } from "./Modal";
+import React, { useCallback, useEffect, useState } from "react";
 import type { Pendulum1Data, Pendulum2Data } from "../App";
 import { encodeJsonToBase64Url } from "../lib/localStorage";
+import { Modal, ModalActions, ModalContent, ModalHeader } from "./Modal";
 
 interface ExportDialogProps {
   isOpen: boolean;
@@ -86,17 +86,6 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
     }
   };
 
-  const copyDataToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(serializeData());
-      // You could add a toast notification here
-      alert("Data zkopírována do schránky");
-    } catch (error) {
-      console.error("Error copying to clipboard:", error);
-      alert("Chyba při kopírování do schránky");
-    }
-  };
-
   const copyUrlToClipboard = async () => {
     try {
       const exportUrl = generateExportUrl();
@@ -174,12 +163,6 @@ export const ExportDialog: React.FC<ExportDialogProps> = ({
         </div>
       </ModalContent>
       <ModalActions>
-        <button
-          onClick={copyDataToClipboard}
-          className="px-4 py-2 rounded-md bg-slate-300 hover:bg-slate-200 text-slate-700 shadow-sm"
-        >
-          Kopírovat data
-        </button>
         <button
           onClick={copyUrlToClipboard}
           className="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white shadow-sm"

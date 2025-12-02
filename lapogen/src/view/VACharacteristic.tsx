@@ -138,7 +138,13 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
               max="30000"
               step="1"
               value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers and empty string
+                if (value === "" || /^\d+$/.test(value)) {
+                  setCurrentInput(value);
+                }
+              }}
               className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="1-30000"
             />
@@ -201,7 +207,7 @@ export const VACharacteristic: FC<VACharacteristicProps> = ({
           xAxisLabel="Proud [uA]"
           yAxisLabel="Napětí [mV]"
           series={chartSeries}
-          showLine={true}
+          showLine={false}
           logarithmicX={logarithmicX}
           yMin={900}
           yMax={1500}
