@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and Build Gravity
+        working-directory: ./gravity
+        run: |
+          npm ci
+          npm run build
+
+      - name: Install and Build Lapogen
+        working-directory: ./lapogen
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare Release Structure
+        run: |
+          mkdir -p labweb/gravity
+          mkdir -p labweb/optron
+          cp -r gravity/dist/* labweb/gravity/
+          cp -r lapogen/dist/* labweb/optron/
+
+      - name: Zip build output
+        run: zip -r labweb.zip labweb
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: labweb.zip
