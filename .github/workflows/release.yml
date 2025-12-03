@@ -21,19 +21,29 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Install and Build Gravity
         working-directory: ./gravity
-        run: npm ci
+        run: |
+          npm ci
+          npm run build
 
-      - name: Build
-        working-directory: ./gravity
-        run: npm run build
+      - name: Install and Build Lapogen
+        working-directory: ./lapogen
+        run: |
+          npm ci
+          npm run build
+
+      - name: Prepare Release Structure
+        run: |
+          mkdir -p labweb/gravity
+          mkdir -p labweb/optron
+          cp -r gravity/dist/* labweb/gravity/
+          cp -r lapogen/dist/* labweb/optron/
 
       - name: Zip build output
-        working-directory: ./gravity
-        run: zip -r ../gravity-build.zip dist
+        run: zip -r labweb.zip labweb
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: gravity-build.zip
+          files: labweb.zip
