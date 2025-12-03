@@ -116,42 +116,6 @@ export const ExportDialog: FC<ExportDialogProps> = ({
     }
   };
 
-  const exportAsJSON = () => {
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lapogen-export-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportAsCSV = (type: keyof AppData) => {
-    let csv = "";
-    const dataSet = data[type];
-
-    if (!dataSet || dataSet.length === 0) {
-      alert("Žádná data k exportu");
-      return;
-    }
-
-    // Generate CSV based on data type
-    const keys = Object.keys(dataSet[0]);
-    csv = keys.join(",") + "\n";
-    dataSet.forEach((row: any) => {
-      csv += keys.map((key) => row[key]).join(",") + "\n";
-    });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lapogen-${type}-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
       <ModalHeader
