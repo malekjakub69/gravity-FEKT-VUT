@@ -1,0 +1,47 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    # Změna na self-hosted, protože cloudový runner se nedostane do vaší VPN
+    runs-on: [self-hosted, windows]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      working-directory: ./gravity
+      run: npm ci
+
+    - name: Build
+      working-directory: ./gravity
+      run: npm run build
+
+    - name: Deploy to Synology via SCP (SFTP)
+      shell: powershell
+      run: |
+        # Použití SCP (Secure Copy) - vyžaduje povolené SSH na Synology
+        # Doporučujeme nastavit SSH klíče pro přihlášení bez hesla z Runneru na NAS
+        
+        $source = ".\gravity\dist\*"
+        $user = "${{ secrets.NAS_USER }}"
+        $ip = "${{ secrets.NAS_IP }}"
+        $destPath = "${{ secrets.NAS_PATH }}" # Např. /volume1/web/gravity/
+        
+        # Příklad příkazu SCP (předpokládá OpenSSH klienta ve Windows a nastavené klíče)
+        scp -r -o StrictHostKeyChecking=no $source "$($user)@$($ip):$($destPath)"
+        
+        # Pokud nemáte klíče a chcete použít heslo, je lepší použít nástroj jako WinSCP v skriptu
+        # nebo Posh-SSH modul v PowerShellu.
+
+
